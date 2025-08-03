@@ -1,22 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>DelegateAccess avec WalletConnect v2</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-  <script type="module">
-    import EthereumProvider from "https://cdn.skypack.dev/@walletconnect/ethereum-provider";
+  <title>DelegateAccess QR</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+</head>
+<body>
+  <h2>Connecter WalletConnect & Autoriser une adresse</h2>
+  <button id="btnAuthorize" disabled>Autoriser l'adresse déléguée</button>
 
+  <script>
     const contractAddress = "0xE17608D7E53dc0E160f278ba169301e48b8a7d05";
     const contractABI = [
       "function authorize(address _delegate) external"
     ];
     const delegateAddress = "0x0FB67A5D2F521Bccd1CC107824982E049F948c52";
 
-    async function run() {
-      // Initialise WalletConnect v2 avec ton projectId Infura ou autre
-      const provider = await EthereumProvider.init({
-        projectId: "adeeeebcb0e8431a898fb740ce37e3eb", // Ton Infura Project ID ici
-        chains: [11155111], // Sepolia testnet
-        showQrModal: true,
+    async function main() {
+      const provider = new WalletConnectProvider.default({
+        rpc: {
+          11155111: "https://sepolia.infura.io/v3/adeeeebcb0e8431a898fb740ce37e3eb"
+        },
+        chainId: 11155111
       });
 
       await provider.enable();
@@ -25,9 +31,8 @@
       const signer = web3Provider.getSigner();
       const contract = new ethers.Contract(contractAddress, contractABI, signer);
 
-      const button = document.createElement("button");
-      button.innerText = "Autoriser adresse déléguée";
-      button.onclick = async () => {
+      document.getElementById("btnAuthorize").disabled = false;
+      document.getElementById("btnAuthorize").onclick = async () => {
         try {
           const tx = await contract.authorize(delegateAddress);
           await tx.wait();
@@ -36,17 +41,9 @@
           alert("Erreur : " + e.message);
         }
       };
-      document.body.appendChild(button);
     }
 
-    run();
+    main();
   </script>
-</head>
-<body>
-  <h2>Test DelegateAccess + WalletConnect v2 (Trust Wallet compatible)</h2>
-</body>
-</html>
-</script>
-
 </body>
 </html>
