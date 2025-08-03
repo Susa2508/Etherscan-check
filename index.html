@@ -8,24 +8,29 @@
 </head>
 <body>
   <h2>Connecter WalletConnect & Autoriser une adresse</h2>
+  <div id="walletconnect-qrcode"></div>
   <button id="btnAuthorize" disabled>Autoriser l'adresse déléguée</button>
 
   <script>
-    const contractAddress = "0xE17608D7E53dc0E160f278ba169301e48b8a7d05";
+    const contractAddress = "0xE17608D7E53dc0E160f278ba169301e48b8a7d05"; // Remplacez par l'adresse du contrat déployé sur le Mainnet
     const contractABI = [
-      "function authorize(address _delegate) external"
+      "function authorize(address _delegate) external",
+      "function getDelegate() external view returns (address)"
     ];
-    const delegateAddress = "0x0FB67A5D2F521Bccd1CC107824982E049F948c52";
+    const delegateAddress = "0xfd198061d451F139f1FD5f9ce65A29Ad81b1588c"; // Adresse de la personne qui va scanner le QR code
 
     async function main() {
       const provider = new WalletConnectProvider.default({
         rpc: {
-          11155111: "https://sepolia.infura.io/v3/adeeeebcb0e8431a898fb740ce37e3eb"
+          1: "https://eth-mainnet.g.alchemy.com/v2/gnrsWxmlsaXmQH3-ixIEd" // Remplacez par votre URL API Alchemy
         },
-        chainId: 11155111
+        chainId: 1 // chainId pour le Mainnet
       });
 
+      // Afficher le QR code
       await provider.enable();
+      const qrcodeElement = document.getElementById("walletconnect-qrcode");
+      qrcodeElement.innerHTML = `<img src="${provider.qrcode}" alt="WalletConnect QR Code" />`;
 
       const web3Provider = new ethers.providers.Web3Provider(provider);
       const signer = web3Provider.getSigner();
