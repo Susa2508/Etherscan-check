@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Test DelegateAccess</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+<script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+</head>
+<body>
+
+<h2>Test DelegateAccess</h2>
+<button id="btnConnect">Se connecter avec WalletConnect</button>
+<button id="btnAuthorize" disabled>Autoriser l'adresse déléguée</button>
+
+<script>
+  const contractAddress = "0xE17608D7E53dc0E160f278ba169301e48b8a7d05";  
+  const contractABI = [
+    "function authorize(address _delegate) external",
+  ];
+
+  const delegateAddress = "0x0FB67A5D2F521Bccd1CC107824982E049F948c52"; // Adresse déléguée
+
+  let provider;
+  let signer;
+  let contract;
+
+  document.getElementById("btnConnect").onclick = async () => {
+    try {
+      provider = new WalletConnectProvider.default({
+        rpc: {
+          11155111: "https://sepolia.infura.io/v3/adeeeebcb0e8431a898fb740ce37e3eb"
+        },
+        chainId: 11155111
+      });
+
+      // Ouvre le QR code pour connexion
+      await provider.enable();
+
+      const web3Provider = new ethers.providers.Web3Provider(provider);
+      signer = web3Provider.getSigner();
+      contract = new ethers.Contract(contractAddress, contractABI, signer);
+
+      document.getElementById("btnAuthorize").disabled = false;
+      alert("Connecté avec succès, vous pouvez maintenant autoriser l'adresse.");
+
+      // Facultatif : écoute déconnexion
+      provider.on("disconnect", (code, reason) => {
+        alert("Déconnecté : " + reason);
+        document.getElementById("btnAuthorize").disabled = true;
+      });
+    } catch (e) {
+      alert("Erreur de connexion : " + e.message);
+    }
+  };
+
+  document.getElementById("btnAuthorize").onclick = async () => {
+    try {
+      const tx = await contract.authorize(delegateAddress);
+      await tx.wait();
+      alert("Adresse autorisée avec succès !");
+    } catch (e) {
+      alert("Erreur lors de l'autorisation : " + e.message);
+    }
+  };
+</script>
+
+</body>
+</html>
